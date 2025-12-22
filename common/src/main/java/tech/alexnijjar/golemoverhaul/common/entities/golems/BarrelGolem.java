@@ -341,15 +341,22 @@ public class BarrelGolem extends BaseGolem {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide() && !this.isOpen()) {
-            this.setXRot(0);
-            this.yHeadRot = 0;
-            this.yBodyRot = 0;
-        }
 
-        ItemStack stack = getMainHandItem();
-        if (!level().isClientSide() && stack.is(Items.EMERALD) && !isBartering() && isOpen()) {
-            this.barter();
+        if (level().isClientSide()) {
+            if (this.isBartering() && this.barteringTicks >= 6 && this.barteringTicks <= 39) {
+                this.setXRot(0);
+                this.yHeadRot = this.yBodyRot;
+            }
+            if (!this.isOpen()) {
+                this.setXRot(0);
+                this.yHeadRot = 0;
+                this.yBodyRot = 0;
+            }
+        } else {
+            ItemStack stack = getMainHandItem();
+            if (stack.is(Items.EMERALD) && !isBartering() && isOpen()) {
+                this.barter();
+            }
         }
     }
 
@@ -418,6 +425,11 @@ public class BarrelGolem extends BaseGolem {
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);
+    }
+
+    @Override
+    protected boolean isImmobile() {
+        return super.isImmobile() || isBartering();
     }
 
     private List<ItemStack> getBarterResponseItems() {
